@@ -19,9 +19,6 @@ Model zoom: https://zenodo.org/record/8031783
     <img src="https://img.shields.io/github/stars/A4Bio/OpenCPD" /></a>
 </p>
 
-[🛠️Installation](docs/en/install.md) |
-[🚀Model Zoo](docs/en/model_zoos/video_benchmarks.md) |
-[🆕News](docs/en/changelog.md)
 
 This repository is an open-source project for benchmarking structure-based protein design methods, which provides a variety of collated datasets, reprouduced methods, novel evaluation metrics, and fine-tuned models that are all integrated into one unified framework. It also contains the implementation code for the paper:
 
