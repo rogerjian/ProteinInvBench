@@ -9,7 +9,7 @@ from collections.abc import Mapping, Sequence
 from torch_geometric.data import Data, Batch
 from torch.utils.data.dataloader import default_collate
 from transformers import AutoTokenizer
-tokenizer = AutoTokenizer.from_pretrained("facebook/esm2_t33_650M_UR50D", cache_dir="/gaozhangyang/model_zoom/transformers") # mask token: 32
+tokenizer = AutoTokenizer.from_pretrained("/Users/daolu/Downloads/transformers/esm2_t33_650M_UR50D") # mask token: 32
 
 def _normalize(tensor, dim=-1):
     '''
@@ -131,24 +131,35 @@ def featurize_GTrans(batch):
         chain_encoding[i,:l] = b['chain_encoding']
 
     mask = np.isfinite(np.sum(X,(2,3))).astype(np.float32) # atom mask
-    numbers = np.sum(mask, axis=1).astype(np.int)
+    numbers = np.sum(mask, axis=1).astype(np.int32)
     S_new = np.zeros_like(S)
     X_new = np.zeros_like(X)+np.nan
+
+    new_chain_mask = np.zeros_like(chain_mask) - 1
+    new_chain_encoding = np.zeros_like(chain_encoding) - 1
+
     for i, n in enumerate(numbers):
         X_new[i,:n,::] = X[i][mask[i]==1]
         S_new[i,:n] = S[i][mask[i]==1]
+        new_chain_mask[i,:n] = chain_mask[i][mask[i]==1]
+        new_chain_encoding[i, :n] = chain_encoding[i][mask[i] == 1]
 
     X = X_new
     S = S_new
     isnan = np.isnan(X)
     mask = np.isfinite(np.sum(X,(2,3))).astype(np.float32)
     X[isnan] = 0.
+
+    chain_mask = new_chain_mask
+    chain_encoding = new_chain_encoding
+
     # Conversion
     S = torch.from_numpy(S).to(dtype=torch.long)
     score = torch.from_numpy(score).float()
     X = torch.from_numpy(X).to(dtype=torch.float32)
     mask = torch.from_numpy(mask).to(dtype=torch.float32)
     lengths = torch.from_numpy(lengths)
+
     chain_mask = torch.from_numpy(chain_mask)
     chain_encoding = torch.from_numpy(chain_encoding)
     

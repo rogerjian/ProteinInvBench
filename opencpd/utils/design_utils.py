@@ -24,13 +24,13 @@ def cal_dihedral(X, eps=1e-7):
     u_1 = U[:,1:-1,:] # C-CA, N-C, CA-N, ... 0, psi_{i}, omega_{i}, phi_{i+1} or 0, tau_{i},...
     u_2 = U[:,2:,:] # N-C, CA-N, C-CA, ...
 
-    n_0 = _normalize(torch.cross(u_0, u_1), dim=-1)
-    n_1 = _normalize(torch.cross(u_1, u_2), dim=-1)
+    n_0 = _normalize(torch.cross(u_0, u_1, dim=-1), dim=-1)
+    n_1 = _normalize(torch.cross(u_1, u_2, dim=-1), dim=-1)
     
     cosD = (n_0 * n_1).sum(-1)
     cosD = torch.clamp(cosD, -1+eps, 1-eps)
     
-    v = _normalize(torch.cross(n_0, n_1), dim=-1)
+    v = _normalize(torch.cross(n_0, n_1, dim=-1), dim=-1)
     D = torch.sign((-v* u_1).sum(-1)) * torch.acos(cosD) # TODO: sign
     
     return D
@@ -122,14 +122,14 @@ def _orientations_coarse_gl(X, E_idx, eps=1e-6):
     dX = X[:,1:,:] - X[:,:-1,:] # CA-N, C-CA, N-C, CA-N...
     U = _normalize(dX, dim=-1)
     u_0, u_1 = U[:,:-2,:], U[:,1:-1,:]
-    n_0 = _normalize(torch.cross(u_0, u_1), dim=-1)
+    n_0 = _normalize(torch.cross(u_0, u_1, dim=-1), dim=-1)
     b_1 = _normalize(u_0 - u_1, dim=-1)
     
     n_0 = n_0[:,::3,:]
     b_1 = b_1[:,::3,:]
     X = X[:,::3,:]
 
-    O = torch.stack((b_1, n_0, torch.cross(b_1, n_0)), 2)
+    O = torch.stack((b_1, n_0, torch.cross(b_1, n_0, dim=-1)), 2)
     O = O.view(list(O.shape[:2]) + [9])
     O = F.pad(O, (0,0,0,1), 'constant', 0)
 
@@ -152,13 +152,13 @@ def _orientations_coarse_gl_tuple(X, E_idx, eps=1e-6):
     dX = X[:,1:,:] - X[:,:-1,:] # CA-N, C-CA, N-C, CA-N...
     U = _normalize(dX, dim=-1)
     u_0, u_1 = U[:,:-2,:], U[:,1:-1,:]
-    n_0 = _normalize(torch.cross(u_0, u_1), dim=-1)
+    n_0 = _normalize(torch.cross(u_0, u_1, dim=-1), dim=-1)
     b_1 = _normalize(u_0 - u_1, dim=-1)
     
     n_0 = n_0[:,::3,:]
     b_1 = b_1[:,::3,:]
     X = X[:,::3,:]
-    Q = torch.stack((b_1, n_0, torch.cross(b_1, n_0)), 2)
+    Q = torch.stack((b_1, n_0, torch.cross(b_1, n_0, dim=-1)), 2)
     Q = Q.view(list(Q.shape[:2]) + [9])
     Q = F.pad(Q, (0,0,0,1), 'constant', 0)
 
